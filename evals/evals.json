@@ -1,0 +1,23 @@
+{
+  "skill_name": "seestarai-xiaohongshu",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "SeestarAI小红书推送，帮我做一期今天的AI日报",
+      "expected_output": "全自动生成：1) 今日AI新闻筛选与选题 2) 10页HTML报道卡片 3) 小红书配套文案。数据经过3+信源交叉验证。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "今天AI圈有什么大事？帮我整理一下发小红书",
+      "expected_output": "触发SeestarAI流程，从多信源搜索→筛选→审查→叙事设计→HTML生成→文案输出，全自动完成。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "帮我写一个AI行业的小红书帖子，要深度一点的",
+      "expected_output": "使用SeestarAI品牌模板，10页深度报道卡片+小红书文案，数据严格审查，540x720px 3:4比例。",
+      "files": []
+    }
+  ]
+}

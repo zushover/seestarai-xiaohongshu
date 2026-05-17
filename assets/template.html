@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeestarAI 报道</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #e8e4de; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 54px 27px; }
+  .canvas { display: flex; gap: 27px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+
+  .card {
+    width: 540px; height: 720px; border-radius: 24px; padding: 36px 42px 36px;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    display: flex; flex-direction: column; position: relative; overflow: hidden; flex-shrink: 0;
+  }
+  .card-light { background: #faf8f5; color: #1c1c1e; }
+  .card-dark  { background: #1c1c1e; color: #e8e4de; }
+  .accent      { color: #c44a2a; }
+  .card-dark .accent { color: #d4744a; }
+  .sec         { color: #8c8880; }
+  .card-dark .sec { color: #7a7670; }
+
+  /* ── 页头 ── */
+  .card .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 21px; }
+  .card .brand { font-size: 18px; font-weight: 800; letter-spacing: 3px; }
+  .card-light .brand { color: #1c1c1e; }
+  .card-dark  .brand { color: #e8e4de; }
+  .card .section-tag { font-size: 12px; letter-spacing: 3px; text-align: right; }
+  .card-light .section-tag { color: #b8b4ac; }
+  .card-dark  .section-tag { color: #5a5650; }
+  .card h2 { font-size: 28px; font-weight: 700; line-height: 1.3; margin-bottom: 18px; letter-spacing: -0.3px; }
+
+  /* ── 封面 ── */
+  .cover .cover-badge {
+    display: inline-block; padding: 5px 16px; border-radius: 20px; font-size: 13px;
+    letter-spacing: 2px; margin-bottom: 24px;
+  }
+  .card-dark .cover-badge { background: rgba(255,255,255,0.06); color: #7a7670; }
+  .cover h1 { font-size: 40px; font-weight: 800; line-height: 1.14; letter-spacing: -0.5px; margin-bottom: 14px; }
+  .cover .lead { font-size: 17px; line-height: 1.55; margin-bottom: 28px; }
+  .cover .hero-stat { margin-bottom: 28px; }
+  .cover .hero-stat .hs-val { font-size: 66px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+  .cover .hero-stat .hs-cap { font-size: 15px; margin-top: 4px; }
+  .cover .cover-footer {
+    font-size: 14px; line-height: 1.5; padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06); margin-top: auto;
+  }
+
+  /* ── 指标行 ── */
+  .metric-stack { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .metric-row {
+    display: flex; align-items: flex-start; gap: 18px; border-radius: 12px; padding: 16px 20px;
+  }
+  .card-dark .metric-row { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.05); }
+  .card-light .metric-row { background: #fff; border: 1px solid #eee; }
+  .metric-row .mv { font-size: 30px; font-weight: 800; min-width: 100px; line-height: 1; flex-shrink: 0; }
+  .metric-row .md { font-size: 15px; line-height: 1.5; }
+  .footnote {
+    font-size: 15px; line-height: 1.5; padding-top: 14px;
+    border-top: 1px solid rgba(0,0,0,0.06); margin-top: auto;
+  }
+  .card-dark .footnote { border-top-color: rgba(255,255,255,0.06); }
+
+  /* ── 2×2 网格 ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid2 .gc { border-radius: 12px; padding: 18px; }
+  .card-dark .gc { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.05); }
+  .card-light .gc { background: #fff; border: 1px solid #eee; }
+  .gc .gv { font-size: 26px; font-weight: 800; margin-bottom: 4px; line-height: 1; }
+  .gc .gl { font-size: 14px; }
+  .card-light .gl { color: #8c8880; }
+  .card-dark  .gl { color: #8a8680; }
+
+  /* ── 融资/机构 2×2 ── */
+  .fund-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
+  .fund-card {
+    border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  }
+  .card-light .fund-card { background: #fff; border: 1px solid #eee; }
+  .card-dark  .fund-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.05); }
+  .fund-card .fname { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .fund-card .frole { font-size: 13px; }
+  .card-light .frole { color: #8c8880; }
+  .card-dark  .frole { color: #7a7670; }
+
+  /* ── 柱状图 ── */
+  .bar-list { display: flex; flex-direction: column; gap: 11px; flex: 1; }
+  .bar-item { display: flex; align-items: center; gap: 12px; }
+  .bar-item .bn { font-size: 14px; font-weight: 600; min-width: 88px; text-align: right; flex-shrink: 0; }
+  .bar-item .bt { flex: 1; height: 26px; border-radius: 5px; position: relative; overflow: hidden; }
+  .card-light .bt { background: #edebe5; }
+  .card-dark  .bt { background: #2a2a2a; }
+  .bar-item .bfill { height: 100%; border-radius: 5px; }
+  .bar-item .bv { font-size: 14px; font-weight: 600; min-width: 95px; flex-shrink: 0; }
+
+  /* ── 双栏辩论 ── */
+  .debate-cols { display: flex; gap: 14px; flex: 1; }
+  .debate-col { flex: 1; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; }
+  .debate-col.bear { background: #f0ede7; border: 1px solid #e0dbd3; }
+  .debate-col.bull { background: #1c1c1e; border: 1px solid #333; }
+  .debate-col .dh { font-size: 13px; letter-spacing: 3px; font-weight: 700; margin-bottom: 10px; }
+  .debate-col.bear .dh { color: #a09888; }
+  .debate-col.bull .dh { color: #d4744a; }
+  .debate-col .di { font-size: 13px; line-height: 1.5; margin-bottom: 6px; padding-left: 8px; position: relative; }
+  .debate-col.bear .di { color: #8a8478; }
+  .debate-col.bull .di { color: #b0aca4; }
+  .debate-col .di::before { content: '·'; position: absolute; left: 0; top: 0; font-weight: 700; }
+  .debate-col.bear .di::before { color: #c0b8a8; }
+  .debate-col.bull .di::before { color: #d4744a; }
+
+  /* ── 增长剖面 2×2 ── */
+  .gro-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gro-card { border-radius: 12px; padding: 18px; display: flex; flex-direction: column; }
+  .card-light .gro-card { background: #fff; border: 1px solid #eee; }
+  .card-dark  .gro-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.05); }
+  .gro-card .gv { font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .gro-card .gwhen { font-size: 13px; margin-bottom: 3px; }
+  .gro-card .gwhat { font-size: 14px; }
+  .card-light .gwhen { color: #8c8880; }
+  .card-dark  .gwhen { color: #8a8680; }
+  .card-light .gwhat { color: #6a6660; }
+  .card-dark  .gwhat { color: #9a9690; }
+
+  /* ── 引语 ── */
+  .quote-stack { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .quote-block {
+    border-left: 3px solid #c44a2a; padding: 12px 16px; font-size: 15px; line-height: 1.5;
+  }
+  .card-light .quote-block { color: #5a5650; background: #f5f2ed; }
+  .card-dark  .quote-block { color: #b0aca6; background: rgba(255,255,255,0.03); border-left-color: #d4744a; }
+  .quote-block .qa { font-size: 13px; margin-top: 4px; font-weight: 600; }
+  .card-light .qa { color: #1c1c1e; }
+  .card-dark  .qa { color: #e8e4de; }
+
+  /* ── 时间线 ── */
+  .tl { position: relative; padding-left: 16px; border-left: 1px solid rgba(255,255,255,0.08); flex: 1; }
+  .tl .tl-i { margin-bottom: 16px; position: relative; }
+  .tl .tl-i::before { content: ''; position: absolute; left: -22px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #d4744a; }
+  .tl .tl-d { font-size: 13px; letter-spacing: 2px; margin-bottom: 2px; }
+  .card-dark .tl-d { color: #5a5650; }
+  .tl .tl-t { font-size: 15px; line-height: 1.45; }
+  .card-dark .tl-t { color: #a0a098; }
+
+  /* ── 来源 ── */
+  .src-stack { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .src-item { border-radius: 12px; padding: 15px 18px; }
+  .card-light .src-item { background: #fff; border: 1px solid #eee; }
+  .card-dark  .src-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.05); }
+  .src-item .st { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .src-item .sd { font-size: 13px; line-height: 1.45; }
+  .card-light .sd { color: #6a6660; }
+  .card-dark  .sd { color: #9a9690; }
+
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- ═══════ 1: 封面 ═══════ -->
+  <!-- 组件: cover, 深色 -->
+  <div class="card card-dark cover">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">深度报道</div>
+    </div>
+    <div class="cover-badge">YYYY.MM.DD · 信源名称</div>
+    <h1>[核心数字+事件]，<br>[冲击力描述]</h1>
+    <div class="lead sec">[2-3句导语：发生了什么，为什么重要]</div>
+    <div class="hero-stat">
+      <div class="hs-val accent">[核心数字对比]</div>
+      <div class="hs-cap sec">[时间范围和说明]</div>
+    </div>
+    <div class="cover-footer sec">
+      [关键参与方/标签1] · [标签2] · [标签3]
+    </div>
+  </div>
+
+  <!-- ═══════ 2: 速度/规模 ═══════ -->
+  <!-- 组件: metric-stack + metric-row, 深色 -->
+  <div class="card card-dark">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">[导航标签]</div>
+    </div>
+    <h2>[标题：多快/多大]</h2>
+    <div class="metric-stack">
+      <div class="metric-row">
+        <div class="mv accent">[时间点1]</div>
+        <div class="md sec">[具体描述 + 关键数字，用 strong 高亮]</div>
+      </div>
+      <div class="metric-row">
+        <div class="mv accent">[时间点2]</div>
+        <div class="md sec">[具体描述 + 关键数字]</div>
+      </div>
+      <div class="metric-row">
+        <div class="mv accent">[总结]</div>
+        <div class="md sec">[对比总结]</div>
+      </div>
+    </div>
+    <div class="footnote sec">[一句话强化核心印象]</div>
+  </div>
+
+  <!-- ═══════ 3: 核心事件 ═══════ -->
+  <!-- 组件: fund-grid, 浅色 -->
+  <div class="card card-light">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">[导航标签]</div>
+    </div>
+    <h2>[标题：谁/多少/怎么发生]</h2>
+    <div class="fund-grid">
+      <div class="fund-card"><div class="fname accent">[参与方1]</div><div class="frole">[角色描述]</div></div>
+      <div class="fund-card"><div class="fname accent">[参与方2]</div><div class="frole">[角色描述]</div></div>
+      <div class="fund-card"><div class="fname accent">[参与方3]</div><div class="frole">[角色描述]</div></div>
+      <div class="fund-card"><div class="fname accent">[参与方4]</div><div class="frole">[角色描述]</div></div>
+    </div>
+    <div class="footnote sec" style="margin-top:14px;">[事件关键解读]</div>
+  </div>
+
+  <!-- ═══════ 4: 竞争格局 ═══════ -->
+  <!-- 组件: metric-stack + metric-row, 深色 -->
+  <div class="card card-dark">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">[导航标签]</div>
+    </div>
+    <h2>[标题：对行业意味着什么]</h2>
+    <div class="metric-stack">
+      <div class="metric-row">
+        <div class="mv accent">[关键数字1]</div>
+        <div class="md sec">[解读1]</div>
+      </div>
+      <div class="metric-row">
+        <div class="mv accent">[关键数字2]</div>
+        <div class="md sec">[解读2]</div>
+      </div>
+      <div class="metric-row">
+        <div class="mv accent">[关键数字3]</div>
+        <div class="md sec">[解读3]</div>
+      </div>
+    </div>
+    <div class="footnote sec">[数据来源标注]</div>
+  </div>
+
+  <!-- ═══════ 5: 参照系 ═══════ -->
+  <!-- 组件: bar-list, 浅色 -->
+  <div class="card card-light">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">参照系</div>
+    </div>
+    <h2>[核心数字]，放在<br>[参照对象]中<br>是什么身位</h2>
+    <div class="bar-list">
+      <div class="bar-item">
+        <div class="bn">[参照1]</div>
+        <div class="bt"><div class="bfill" style="width:100%;background:#1c1c1e;"></div></div>
+        <div class="bv">[数值1]</div>
+      </div>
+      <div class="bar-item">
+        <div class="bn">[参照2]</div>
+        <div class="bt"><div class="bfill" style="width:[X]%;background:#1c1c1e;"></div></div>
+        <div class="bv">[数值2]</div>
+      </div>
+      <!-- ... 更多参照 ... -->
+      <div class="bar-item">
+        <div class="bn" style="color:#c44a2a;">[当前主体]</div>
+        <div class="bt"><div class="bfill" style="width:[X]%;background:#c44a2a;"></div></div>
+        <div class="bv accent">[数值]</div>
+      </div>
+    </div>
+    <div class="footnote sec">[一句话解读 + 数据来源]</div>
+  </div>
+
+  <!-- ═══════ 6: 正反辩论 ═══════ -->
+  <!-- 组件: debate-cols, 浅色 -->
+  <div class="card card-light">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">[导航标签]</div>
+    </div>
+    <h2>[核心命题]：<br>[正方]，<br>还是[反方]？</h2>
+    <div class="debate-cols">
+      <div class="debate-col bear">
+        <div class="dh">[反方标签]</div>
+        <div class="di">[反方论点1]</div>
+        <div class="di">[反方论点2]</div>
+        <div class="di">[反方论点3]</div>
+        <div class="di">[反方论点4]</div>
+      </div>
+      <div class="debate-col bull">
+        <div class="dh">[正方标签]</div>
+        <div class="di">[正方论点1]</div>
+        <div class="di">[正方论点2]</div>
+        <div class="di">[正方论点3]</div>
+        <div class="di">[正方论点4]</div>
+      </div>
+    </div>
+    <div class="footnote sec" style="margin-top:14px;">[总结：不确定但市场在投票]</div>
+  </div>
+
+  <!-- ═══════ 7: 增长剖面 ═══════ -->
+  <!-- 组件: gro-nums, 深色 -->
+  <div class="card card-dark">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">[导航标签]</div>
+    </div>
+    <h2>[标题：收入和渗透率<br>两条曲线]</h2>
+    <div class="gro-nums">
+      <div class="gro-card">
+        <div class="gv accent">[数值1-旧]</div>
+        <div class="gwhen">[时间点1]</div>
+        <div class="gwhat">[指标含义]</div>
+      </div>
+      <div class="gro-card">
+        <div class="gv accent">[数值1-新]</div>
+        <div class="gwhen">[时间点2]</div>
+        <div class="gwhat">[变化描述]</div>
+      </div>
+      <div class="gro-card">
+        <div class="gv accent">[数值2-旧]</div>
+        <div class="gwhen">[时间点1]</div>
+        <div class="gwhat">[指标含义]</div>
+      </div>
+      <div class="gro-card">
+        <div class="gv accent">[数值2-新]</div>
+        <div class="gwhen">[时间点2]</div>
+        <div class="gwhat">[变化描述]</div>
+      </div>
+    </div>
+    <div class="footnote sec">[一句话趋势解读]</div>
+  </div>
+
+  <!-- ═══════ 8: 多方观点 ═══════ -->
+  <!-- 组件: quote-stack, 浅色 -->
+  <div class="card card-light">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">各方观点</div>
+    </div>
+    <h2>他们怎么看<br>这 [核心数字]</h2>
+    <div class="quote-stack">
+      <div class="quote-block">
+        "[引语1原文]"
+        <div class="qa">— 信源1, 日期</div>
+      </div>
+      <div class="quote-block">
+        "[引语2原文]"
+        <div class="qa">— 信源2, 日期</div>
+      </div>
+      <div class="quote-block">
+        "[引语3原文]"
+        <div class="qa">— 信源3, 日期</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 9: 展望 ═══════ -->
+  <!-- 组件: tl 时间线, 深色 -->
+  <div class="card card-dark">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">展望</div>
+    </div>
+    <h2>[标题：几个变量<br>决定是顶还是底]</h2>
+    <div class="tl">
+      <div class="tl-i">
+        <div class="tl-d">[短期标签]</div>
+        <div class="tl-t">[短期变量描述]</div>
+      </div>
+      <div class="tl-i">
+        <div class="tl-d">[中期标签]</div>
+        <div class="tl-t">[中期变量描述]</div>
+      </div>
+      <div class="tl-i">
+        <div class="tl-d">[长期标签]</div>
+        <div class="tl-t">[长期变量描述]</div>
+      </div>
+    </div>
+    <div class="footnote sec">[一句收尾金句]</div>
+  </div>
+
+  <!-- ═══════ 10: 数据来源 ═══════ -->
+  <!-- 组件: src-stack, 浅色 -->
+  <div class="card card-light">
+    <div class="page-header">
+      <div class="brand">SeestarAI分享</div>
+      <div class="section-tag">数据来源</div>
+    </div>
+    <h2>本报道所有数据<br>均来自公开信源</h2>
+    <div class="src-stack">
+      <div class="src-item">
+        <div class="st">[信源1] · [日期]</div>
+        <div class="sd">[报道内容、信源性质描述]</div>
+      </div>
+      <div class="src-item">
+        <div class="st">[信源2] · [日期]</div>
+        <div class="sd">[报道内容、信源性质描述]</div>
+      </div>
+      <div class="src-item">
+        <div class="st">[信源3] · [日期]</div>
+        <div class="sd">[报道内容、信源性质描述]</div>
+      </div>
+      <div class="src-item">
+        <div class="st">[信源4] · [日期]</div>
+        <div class="sd">[报道内容、信源性质描述]</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
